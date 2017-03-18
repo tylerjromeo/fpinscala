@@ -180,8 +180,9 @@ object PolymorphicFunctions {
   // NB: The `Function2` trait has a `curried` method already
 
   // Exercise 4: Implement `uncurry`
-  def uncurry[A, B, C](f: A => B => C): (A, B) => C =
-    ???
+  def uncurry[A, B, C](f: A => B => C): (A, B) => C = {
+    (a, b) => f(a)(b)
+  }
 
   /*
   NB: There is a method on the `Function` object in the standard library,
