@@ -158,7 +158,10 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = {
+    val pairs = as.zip(as.tail)
+    pairs.forall(gt.tupled)
+  }
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
@@ -193,4 +196,15 @@ object PolymorphicFunctions {
 
   def compose[A, B, C](f: B => C, g: A => B): A => C =
     ???
+}
+
+object TestPolyMorphicFunctions {
+
+  import PolymorphicFunctions._
+
+  // test implementation of `fib`
+  def main(args: Array[String]): Unit = {
+    println("Expected: true, false")
+    println(s"Actual: ${isSorted(Array[Int](1,2,3), (lhs:Int, rhs:Int) => lhs < rhs)}, ${isSorted(Array[Char]('a','c','b'), (lhs:Char, rhs:Char) => lhs < rhs)}  ")
+  }
 }
