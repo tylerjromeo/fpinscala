@@ -75,7 +75,12 @@ object List { // `List` companion object. Contains functions for creating and wo
     case ll => ll
   }
 
-  def init[A](l: List[A]): List[A] = ???
+  //not tail recursive, and has to go through the entire list. poopy. (but it's all part of the lesson)
+  def init[A](l: List[A]): List[A] =  l match {
+    case Nil => Nil
+    case Cons(_,Nil) => Nil
+    case Cons(h,t) => Cons(h,init(t))
+  }
 
   def length[A](l: List[A]): Int = ???
 
@@ -105,6 +110,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (Nil, dropWhile(List(1, 2, 3, 1), (n: Int) => n < 4)),
       (Nil, dropWhile(Nil, (_: Int) => {assert(false); true})),
       (List(1000, 1, 1, 1, 1), dropWhile(List(1000, 1, 1, 1, 1), (n: Int) => n < 3))
+    ))
+    test("init", Seq(
+      (List(1,2), init(List(1, 2,3))),
+      (Nil, init(Nil)),
+      (Nil, init(List(1)))
     ))
   }
 
