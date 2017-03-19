@@ -1,5 +1,7 @@
 package fpinscala.datastructures
 
+import scala.annotation.tailrec
+
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 /* Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`,
@@ -55,9 +57,17 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Nil => Nil
   }
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] = l match {
+    case Cons(_, xs) => Cons(h, xs)
+    case Nil => Cons(h, Nil)
+  }
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  @tailrec
+  def drop[A](l: List[A], n: Int): List[A] = l match {
+    case ll if n <= 0 => ll
+    case Nil => Nil
+    case Cons(_, t) => drop(t, n-1)
+  }
 
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
 
@@ -70,8 +80,29 @@ object List { // `List` companion object. Contains functions for creating and wo
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
-    println("Tail test:")
-    println("expected: Nil, Cons(2, Cons(3, Nil)), Nil")
-    println(s"result: ${tail(List(1))}, ${tail(List(1,2,3))}, ${tail(Nil)}")
+    test("tail", Seq(
+      (List(2,3), tail(List(1, 2,3))),
+      (Nil, tail(Nil)),
+      (Nil, tail(List(1)))
+    ))
+    test("setHead", Seq(
+      (List(5, 2,3), setHead(List(1, 2,3), 5)),
+      (List("bip"), setHead(Nil, "bip")),
+      (List(List(1), List("a"), Nil), setHead(List(Nil, List("a"), Nil), List(1)))
+    ))
+    test("drop", Seq(
+      (List(3), drop(List(1, 2, 3), 2)),
+      (Nil, drop(List(1,2,3,4,5), 5)),
+      (List(1), drop(List(1), 0))
+    ))
+  }
+
+  def test[A, B](name: String, ioTable: Seq[(A, B)]): Unit = {
+    println(s"$name test:")
+    ioTable.foreach {
+      case (expected, result) if expected != result => println(s"expected $expected but was $result")
+      case _ => ()
+    }
+    println(s"$name test complete\n")
   }
 }
