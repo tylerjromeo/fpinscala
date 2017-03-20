@@ -102,6 +102,8 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def foldRight2[A,B](l: List[A], z: B)(f: (A, B) => B): B = foldLeft(reverse(l), z)((b, a) => f(a, b))
 
+  def append2[A](l: List[A], l2: List[A]): List[A] = foldRight(l, l2)(Cons(_, _))
+
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
@@ -174,6 +176,12 @@ object List { // `List` companion object. Contains functions for creating and wo
       (2, foldRight2(List(1, 2, 3), 0)(_ - _)),
       (24, foldRight2(List(1, 2, 3, 4), 1)(_ * _)),
       (0, foldRight2(Nil, 0)((x,y) => {assert(false); x}))
+    ))
+    test("append2", Seq(
+      (List(1,2,3,4), append2(List(1,2), List(3,4))),
+      (Nil, append2(Nil, Nil)),
+      (List(1), append2(List(1), Nil)),
+      (List(1), append2(Nil, List(1)))
     ))
   }
 
