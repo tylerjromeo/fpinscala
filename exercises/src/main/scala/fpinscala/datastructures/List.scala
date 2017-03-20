@@ -120,6 +120,13 @@ object List { // `List` companion object. Contains functions for creating and wo
     reverse(foldLeft(l, Nil: List[B])((acc, n) => Cons(f(n), acc)))
   }
 
+  def filter[A](l: List[A])(f: A => Boolean): List[A] = {
+    reverse(foldLeft(l, Nil: List[A]){
+      case (acc, a) if f(a) => Cons(a, acc)
+      case (acc, _) => acc
+    })
+  }
+
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
       (List(2,3), tail(List(1, 2,3))),
@@ -220,6 +227,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List("2.0","3.01","4.0"), map(List(2.0, 3.01, 4.0))(_.toString)),
       (Nil, map(Nil)(_.toString)),
       (List("1.0"), map(List(1.0))(_.toString))
+    ))
+    test("filter", Seq(
+      (List(2), filter(List(1, 2,3))(_ % 2 == 0)),
+      (Nil, filter(Nil: List[Int])(_ % 2 == 0)),
+      (List(4), filter(List(4))(_ % 2 == 0))
     ))
   }
 
