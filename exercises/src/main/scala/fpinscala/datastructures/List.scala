@@ -96,7 +96,11 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def length2(ns: List[Int]): Int = foldLeft(ns, 0)((count, _) => count + 1)
 
-  def reverse(ns: List[Int]): List[Int] = foldLeft(ns, Nil: List[Int])((acc, x) => Cons(x, acc))
+  def reverse[A](ns: List[A]): List[A] = foldLeft(ns, Nil: List[A])((acc, x) => Cons(x, acc))
+
+  def foldLeft2[A,B](l: List[A], z: B)(f: (B, A) => B): B = foldRight(reverse(l), z)((a, b) => f(b, a))
+
+  def foldRight2[A,B](l: List[A], z: B)(f: (A, B) => B): B = foldLeft(reverse(l), z)((b, a) => f(a, b))
 
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
@@ -137,7 +141,6 @@ object List { // `List` companion object. Contains functions for creating and wo
       (6, foldLeft(List(1, 2, 3), 0)(_ + _)),
       (-6, foldLeft(List(1, 2, 3), 0)(_ - _)),
       (24, foldLeft(List(1, 2, 3, 4), 1)(_ * _)),
-      (1/24, foldLeft(List(1, 2, 3, 4), 1)(_ / _)),
       (0, foldLeft(Nil, 0)((x,y) => {assert(false); x}))
     ))
     test("sum3", Seq(
@@ -159,6 +162,18 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(3,2,1), reverse(List(1, 2,3))),
       (Nil, reverse(Nil)),
       (List(1), reverse(List(1)))
+    ))
+    test("foldLeft2", Seq(
+      (6, foldLeft2(List(1, 2, 3), 0)(_ + _)),
+      (-6, foldLeft2(List(1, 2, 3), 0)(_ - _)),
+      (24, foldLeft2(List(1, 2, 3, 4), 1)(_ * _)),
+      (0, foldLeft2(Nil, 0)((x,y) => {assert(false); x}))
+    ))
+    test("foldRight2", Seq(
+      (6, foldRight2(List(1, 2, 3), 0)(_ + _)),
+      (2, foldRight2(List(1, 2, 3), 0)(_ - _)),
+      (24, foldRight2(List(1, 2, 3, 4), 1)(_ * _)),
+      (0, foldRight2(Nil, 0)((x,y) => {assert(false); x}))
     ))
   }
 
