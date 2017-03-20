@@ -84,7 +84,11 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def length[A](l: List[A]): Int = foldRight(l, 0)((_, n) => n + 1)
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  @tailrec
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+  }
 
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
@@ -120,6 +124,13 @@ object List { // `List` companion object. Contains functions for creating and wo
       (3, length(List(1, 2,3))),
       (0, length(Nil)),
       (1, length(List(1)))
+    ))
+    test("foldLeft", Seq(
+      (6, foldLeft(List(1, 2, 3), 0)(_ + _)),
+      (-6, foldLeft(List(1, 2, 3), 0)(_ - _)),
+      (24, foldLeft(List(1, 2, 3, 4), 1)(_ * _)),
+      (1/24, foldLeft(List(1, 2, 3, 4), 1)(_ / _)),
+      (0, foldLeft(Nil, 0)((x,y) => {assert(false); x}))
     ))
   }
 
