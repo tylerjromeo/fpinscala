@@ -112,6 +112,10 @@ object List { // `List` companion object. Contains functions for creating and wo
     reverse(foldLeft(l, Nil: List[Int])((acc, n) => Cons(n + 1, acc)))
   }
 
+  def convertToString(l: List[Double]): List[String] = {
+    reverse(foldLeft(l, Nil: List[String])((acc, n) => Cons(n.toString, acc)))
+  }
+
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
@@ -201,6 +205,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(2,3,4), addOne(List(1, 2,3))),
       (Nil, addOne(Nil)),
       (List(2), addOne(List(1)))
+    ))
+    test("convertToString", Seq(
+      (List("2.0","3.01","4.0"), convertToString(List(2.0, 3.01, 4.0))),
+      (Nil, convertToString(Nil)),
+      (List("1.0"), convertToString(List(1.0)))
     ))
   }
 
