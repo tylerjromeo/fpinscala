@@ -90,6 +90,12 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
   }
 
+  def sum3(ns: List[Int]): Int = foldLeft(ns, 0)(_ + _)
+
+  def product3(ns: List[Int]): Int = foldLeft(ns, 1)(_ * _)
+
+  def length2(ns: List[Int]): Int = foldLeft(ns, 0)((count, _) => count + 1)
+
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
@@ -131,6 +137,21 @@ object List { // `List` companion object. Contains functions for creating and wo
       (24, foldLeft(List(1, 2, 3, 4), 1)(_ * _)),
       (1/24, foldLeft(List(1, 2, 3, 4), 1)(_ / _)),
       (0, foldLeft(Nil, 0)((x,y) => {assert(false); x}))
+    ))
+    test("sum3", Seq(
+      (6, sum3(List(1, 2,3))),
+      (0, sum3(Nil)),
+      (1, sum3(List(1)))
+    ))
+    test("product3", Seq(
+      (24, product3(List(1, 2,3, 4))),
+      (1, product3(Nil)),
+      (1, product3(List(1)))
+    ))
+    test("length2", Seq(
+      (3, length2(List(1, 2,3))),
+      (0, length2(Nil)),
+      (1, length2(List(1)))
     ))
   }
 
