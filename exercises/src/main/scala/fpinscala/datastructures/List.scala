@@ -104,6 +104,10 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def append2[A](l: List[A], l2: List[A]): List[A] = foldRight(l, l2)(Cons(_, _))
 
+  def flatten[A](ls: List[List[A]]): List[A] = {
+    foldRight(ls, Nil: List[A])(append2)
+  }
+
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
@@ -182,6 +186,12 @@ object List { // `List` companion object. Contains functions for creating and wo
       (Nil, append2(Nil, Nil)),
       (List(1), append2(List(1), Nil)),
       (List(1), append2(Nil, List(1)))
+    ))
+    test("flatten", Seq(
+      (List(1,2,3,4), flatten(List(List(1,2), List(3), List(4)))),
+      (Nil, flatten(List(Nil, Nil))),
+      (List(1), flatten(List(Nil, List(1), Nil))),
+      (List(1, 2, 3), flatten(List(Nil, List(1), Nil, List(2,3))))
     ))
   }
 
