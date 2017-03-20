@@ -96,6 +96,8 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def length2(ns: List[Int]): Int = foldLeft(ns, 0)((count, _) => count + 1)
 
+  def reverse(ns: List[Int]): List[Int] = foldLeft(ns, Nil: List[Int])((acc, x) => Cons(x, acc))
+
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
@@ -152,6 +154,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (3, length2(List(1, 2,3))),
       (0, length2(Nil)),
       (1, length2(List(1)))
+    ))
+    test("reverse", Seq(
+      (List(3,2,1), reverse(List(1, 2,3))),
+      (Nil, reverse(Nil)),
+      (List(1), reverse(List(1)))
     ))
   }
 
