@@ -116,7 +116,9 @@ object List { // `List` companion object. Contains functions for creating and wo
     reverse(foldLeft(l, Nil: List[String])((acc, n) => Cons(n.toString, acc)))
   }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def map[A,B](l: List[A])(f: A => B): List[B] = {
+    reverse(foldLeft(l, Nil: List[B])((acc, n) => Cons(f(n), acc)))
+  }
 
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
@@ -210,6 +212,14 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List("2.0","3.01","4.0"), convertToString(List(2.0, 3.01, 4.0))),
       (Nil, convertToString(Nil)),
       (List("1.0"), convertToString(List(1.0)))
+    ))
+    test("map", Seq(
+      (List(2,3,4), map(List(1, 2,3))(_ + 1)),
+      (Nil, map(Nil: List[Int])(_ + 1)),
+      (List(2), map(List(1))(_ + 1)),
+      (List("2.0","3.01","4.0"), map(List(2.0, 3.01, 4.0))(_.toString)),
+      (Nil, map(Nil)(_.toString)),
+      (List("1.0"), map(List(1.0))(_.toString))
     ))
   }
 
