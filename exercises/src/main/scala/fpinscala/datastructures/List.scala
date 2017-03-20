@@ -108,6 +108,10 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(ls, Nil: List[A])(append2)
   }
 
+  def addOne(l: List[Int]): List[Int] = {
+    reverse(foldLeft(l, Nil: List[Int])((acc, n) => Cons(n + 1, acc)))
+  }
+
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 
   def main(args: Array[String]): Unit = {
@@ -192,6 +196,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (Nil, flatten(List(Nil, Nil))),
       (List(1), flatten(List(Nil, List(1), Nil))),
       (List(1, 2, 3), flatten(List(Nil, List(1), Nil, List(2,3))))
+    ))
+    test("addOne", Seq(
+      (List(2,3,4), addOne(List(1, 2,3))),
+      (Nil, addOne(Nil)),
+      (List(2), addOne(List(1)))
     ))
   }
 
