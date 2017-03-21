@@ -131,6 +131,10 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldLeft(l, Nil: List[B])((acc, x) => append(acc, f(x)))
   }
 
+  def filter2[A](l: List[A])(f: A => Boolean): List[A] = {
+    flatMap(l)((x) => if(f(x)) List(x) else Nil)
+  }
+
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
       (List(2,3), tail(List(1, 2,3))),
@@ -242,6 +246,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(2,3,4), flatMap(List(1, 2,3))((x) => List(x + 1))),
       (Nil, flatMap(List(1, 2,3))((_) => Nil)),
       (Nil, flatMap(Nil)((_) => {assert(false); List(1)}))
+    ))
+    test("filter2", Seq(
+      (List(2), filter2(List(1, 2,3))(_ % 2 == 0)),
+      (Nil, filter2(Nil: List[Int])(_ % 2 == 0)),
+      (List(4), filter2(List(4))(_ % 2 == 0))
     ))
   }
 
