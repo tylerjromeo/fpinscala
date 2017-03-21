@@ -15,11 +15,21 @@ object Tree {
     case Branch(l, r) => 1 + size(l) + size(r)
   }
 
+  def max(t: Tree[Int]): Int = t match {
+    case Leaf(x) => x
+    case Branch(l, r) => max(l).max(max(r))
+  }
+
   def main(args: Array[String]): Unit = {
     test("size", Seq(
       (1, size(Leaf(0))),
       (3, size(Branch(Leaf(0), Leaf(0)))),
       (5, size(Branch(Branch(Leaf(0), Leaf(0)), Leaf(0))))
+    ))
+    test("max", Seq(
+      (1, max(Leaf(1))),
+      (3, max(Branch(Leaf(0), Leaf(3)))),
+      (5, max(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3))))
     ))
   }
 
