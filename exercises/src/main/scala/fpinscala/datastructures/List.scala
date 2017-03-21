@@ -135,6 +135,18 @@ object List { // `List` companion object. Contains functions for creating and wo
     flatMap(l)((x) => if(f(x)) List(x) else Nil)
   }
 
+  def addLists(l1: List[Int], l2: List[Int]): List[Int] = {
+    @tailrec
+    def iter(ll1: List[Int], ll2: List[Int], acc: List[Int]): List[Int] = {
+      (ll1, ll2) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(h1, t1), Cons(h2, t2)) => iter(t1, t2, Cons(h1 + h2, acc))
+      }
+    }
+    reverse(iter(l1, l2, Nil))
+  }
+
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
       (List(2,3), tail(List(1, 2,3))),
@@ -251,6 +263,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(2), filter2(List(1, 2,3))(_ % 2 == 0)),
       (Nil, filter2(Nil: List[Int])(_ % 2 == 0)),
       (List(4), filter2(List(4))(_ % 2 == 0))
+    ))
+    test("addLists", Seq(
+      (List(5,7,9), addLists(List(1, 2,3), List(4,5,6))),
+      (Nil, addLists(Nil, Nil)),
+      (List(5), addLists(List(1), List(4)))
     ))
   }
 
