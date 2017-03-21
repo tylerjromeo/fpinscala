@@ -127,6 +127,10 @@ object List { // `List` companion object. Contains functions for creating and wo
     })
   }
 
+  def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] = {
+    foldLeft(l, Nil: List[B])((acc, x) => append(acc, f(x)))
+  }
+
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
       (List(2,3), tail(List(1, 2,3))),
@@ -232,6 +236,12 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(2), filter(List(1, 2,3))(_ % 2 == 0)),
       (Nil, filter(Nil: List[Int])(_ % 2 == 0)),
       (List(4), filter(List(4))(_ % 2 == 0))
+    ))
+    test("flatmap", Seq(
+      (List(1,1,2,2,3,3), flatMap(List(1, 2,3))((x) => List(x, x))),
+      (List(2,3,4), flatMap(List(1, 2,3))((x) => List(x + 1))),
+      (Nil, flatMap(List(1, 2,3))((_) => Nil)),
+      (Nil, flatMap(Nil)((_) => {assert(false); List(1)}))
     ))
   }
 
