@@ -147,6 +147,18 @@ object List { // `List` companion object. Contains functions for creating and wo
     reverse(iter(l1, l2, Nil))
   }
 
+  def zipWith[A, B](l1: List[A], l2: List[A])(f: (A, A) => B): List[B] = {
+    @tailrec
+    def iter(ll1: List[A], ll2: List[A], acc: List[B]): List[B] = {
+      (ll1, ll2) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(h1, t1), Cons(h2, t2)) => iter(t1, t2, Cons(f(h1, h2), acc))
+      }
+    }
+    reverse(iter(l1, l2, Nil))
+  }
+
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
       (List(2,3), tail(List(1, 2,3))),
@@ -268,6 +280,11 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(5,7,9), addLists(List(1, 2,3), List(4,5,6))),
       (Nil, addLists(Nil, Nil)),
       (List(5), addLists(List(1), List(4)))
+    ))
+    test("zipWith", Seq(
+      (List(5,7,9), zipWith(List(1, 2,3), List(4,5,6))(_ + _)),
+      (Nil, zipWith(Nil, Nil)((_, _) => {assert(false)})),
+      (List(-3,-4,-5), zipWith(List(1, 2,3), List(4,6,8))(_ - _))
     ))
   }
 
