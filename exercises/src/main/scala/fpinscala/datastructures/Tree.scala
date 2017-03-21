@@ -24,7 +24,12 @@ object Tree {
   //not tail recursive
   def depth(t: Tree[_]): Int = t match {
     case Leaf(_) => 1
-    case Branch(l,r) => 1 + depth(l).max(depth(r))
+    case Branch(l, r) => 1 + depth(l).max(depth(r))
+  }
+
+  def map[A, B](t: Tree[A])(f: A => B): Tree[B] = t match {
+    case Leaf(x) => Leaf(f(x))
+    case Branch(l, r) => Branch[B](map(l)(f), map(r)(f))
   }
 
   def main(args: Array[String]): Unit = {
@@ -42,6 +47,11 @@ object Tree {
       (1, depth(Leaf(1))),
       (2, depth(Branch(Leaf(0), Leaf(3)))),
       (3, depth(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3))))
+    ))
+    test("map", Seq(
+      (Leaf(2), map(Leaf(1))(_ + 1)),
+      (Branch(Leaf(1), Leaf(4)), map(Branch(Leaf(0), Leaf(3)))(_ + 1)),
+      (Branch(Branch(Leaf(1), Leaf(6)), Leaf(4)), map(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3)))(_ + 1))
     ))
   }
 
