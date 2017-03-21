@@ -32,6 +32,19 @@ object Tree {
     case Branch(l, r) => Branch[B](map(l)(f), map(r)(f))
   }
 
+  def fold[A,B](t: Tree[A])(l: A => B)(b: (B,B) => B): B = t match {
+    case Leaf(x) => l(x)
+    case Branch(left, right) => b(fold(left)(l)(b), fold(right)(l)(b))
+  }
+
+  def size2(t: Tree[_]): Int = fold(t)((_) => 1)((x, y) => 1 + x + y)
+
+  def max2(t: Tree[Int]): Int = fold(t)((x) => x)((x, y) => x.max(y))
+
+  def depth2(t: Tree[_]): Int = fold(t)((_) => 1)((x, y) => 1 + x.max(y))
+
+  def map2[A, B](t: Tree[A])(f: A => B): Tree[B] = fold(t)(x => Leaf(f(x)): Tree[B])((l, r) => Branch(l, r))
+
   def main(args: Array[String]): Unit = {
     test("size", Seq(
       (1, size(Leaf(0))),
@@ -52,6 +65,27 @@ object Tree {
       (Leaf(2), map(Leaf(1))(_ + 1)),
       (Branch(Leaf(1), Leaf(4)), map(Branch(Leaf(0), Leaf(3)))(_ + 1)),
       (Branch(Branch(Leaf(1), Leaf(6)), Leaf(4)), map(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3)))(_ + 1))
+    ))
+
+    test("size2", Seq(
+      (1, size2(Leaf(0))),
+      (3, size2(Branch(Leaf(0), Leaf(0)))),
+      (5, size2(Branch(Branch(Leaf(0), Leaf(0)), Leaf(0))))
+    ))
+    test("max2", Seq(
+      (1, max2(Leaf(1))),
+      (3, max2(Branch(Leaf(0), Leaf(3)))),
+      (5, max2(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3))))
+    ))
+    test("depth2", Seq(
+      (1, depth2(Leaf(1))),
+      (2, depth2(Branch(Leaf(0), Leaf(3)))),
+      (3, depth2(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3))))
+    ))
+    test("map2", Seq(
+      (Leaf(2), map2(Leaf(1))(_ + 1)),
+      (Branch(Leaf(1), Leaf(4)), map2(Branch(Leaf(0), Leaf(3)))(_ + 1)),
+      (Branch(Branch(Leaf(1), Leaf(6)), Leaf(4)), map2(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3)))(_ + 1))
     ))
   }
 
