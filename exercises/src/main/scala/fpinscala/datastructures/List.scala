@@ -159,6 +159,23 @@ object List { // `List` companion object. Contains functions for creating and wo
     reverse(iter(l1, l2, Nil))
   }
 
+  @tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    @tailrec
+    def startsWith(l: List[A], test: List[A]): Boolean = {
+      (l, test) match {
+        case (_, Nil) => true
+        case (Nil, _) => false
+        case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => startsWith(t1, t2)
+        case (_, _)  => false
+      }
+    }
+    if(startsWith(sup, sub)) true else sup match {
+      case Nil => false
+      case Cons(_, t) => hasSubsequence(t, sub)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     test("tail", Seq(
       (List(2,3), tail(List(1, 2,3))),
@@ -285,6 +302,14 @@ object List { // `List` companion object. Contains functions for creating and wo
       (List(5,7,9), zipWith(List(1, 2,3), List(4,5,6))(_ + _)),
       (Nil, zipWith(Nil, Nil)((_, _) => {assert(false)})),
       (List(-3,-4,-5), zipWith(List(1, 2,3), List(4,6,8))(_ - _))
+    ))
+    test("hasSubsequence", Seq(
+      (true, hasSubsequence(List(1,2,3), List(1,2))),
+      (true, hasSubsequence(List(1,2,3), List(1,2,3))),
+      (true, hasSubsequence(List(1,2,3), Nil)),
+      (false, hasSubsequence(List(1,2,3), List(1,3))),
+      (false, hasSubsequence(Nil, List(1,3))),
+      (true, hasSubsequence(Nil, Nil))
     ))
   }
 
