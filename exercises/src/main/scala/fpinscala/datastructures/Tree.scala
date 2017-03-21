@@ -15,9 +15,16 @@ object Tree {
     case Branch(l, r) => 1 + size(l) + size(r)
   }
 
+  //not tail recursive
   def max(t: Tree[Int]): Int = t match {
     case Leaf(x) => x
     case Branch(l, r) => max(l).max(max(r))
+  }
+
+  //not tail recursive
+  def depth(t: Tree[_]): Int = t match {
+    case Leaf(_) => 1
+    case Branch(l,r) => 1 + depth(l).max(depth(r))
   }
 
   def main(args: Array[String]): Unit = {
@@ -30,6 +37,11 @@ object Tree {
       (1, max(Leaf(1))),
       (3, max(Branch(Leaf(0), Leaf(3)))),
       (5, max(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3))))
+    ))
+    test("depth", Seq(
+      (1, depth(Leaf(1))),
+      (2, depth(Branch(Leaf(0), Leaf(3)))),
+      (3, depth(Branch(Branch(Leaf(0), Leaf(5)), Leaf(3))))
     ))
   }
 
