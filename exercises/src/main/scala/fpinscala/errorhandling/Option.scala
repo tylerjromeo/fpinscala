@@ -58,7 +58,13 @@ object Option {
     if (xs.isEmpty) None
     else Some(xs.sum / xs.length)
 
-  def variance(xs: Seq[Double]): Option[Double] = ???
+  def variance(xs: Seq[Double]): Option[Double] = {
+    mean(xs).flatMap{ m =>
+      mean(xs.map{ x =>
+        math.pow(x - m, 2)
+      })
+    }
+  }
 
   def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
 
@@ -93,6 +99,11 @@ object Option {
       (Some(1), Some(1).filter(_ == 1)),
       (None, Some(1).filter(_ == 0)),
       (None, None.filter(_ == 0))
+    ))
+
+    test("variance", Seq(
+      (Some(2.0815999999999995), variance(Seq(1.0, 2.0, 3.0, 4.0, 5.1))),
+      (None, variance(Seq()))
     ))
   }
 
