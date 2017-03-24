@@ -66,7 +66,9 @@ object Option {
     }
   }
 
-  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+    a.flatMap(aa => b.map(bb => f(aa, bb)))
+  }
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = ???
 
@@ -104,6 +106,12 @@ object Option {
     test("variance", Seq(
       (Some(2.0815999999999995), variance(Seq(1.0, 2.0, 3.0, 4.0, 5.1))),
       (None, variance(Seq()))
+    ))
+
+    test("map2", Seq(
+      (Some(3), map2(Some(1), Some(2))(_ + _)),
+      (None, map2(None: Option[Int], Some(2))(_ + _)),
+      (None, map2(Some(1), None: Option[Int])(_ + _))
     ))
   }
 
