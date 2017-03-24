@@ -76,7 +76,11 @@ object Option {
     }.map(_.reverse)
   }
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = ???
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+    a.foldRight(Some(Nil): Option[List[B]]){
+      case (aa, z) => map2(f(aa), z)(_ :: _)
+    }
+  }
 
   def main(args: Array[String]): Unit = {
     test("map", Seq(
@@ -121,6 +125,11 @@ object Option {
     test("sequence", Seq(
       (Some(List(1, 2, 3)), sequence(List(Some(1), Some(2), Some(3)))),
       (None, sequence(List(Some(1), None, Some(3))))
+    ))
+
+    test("traverse", Seq(
+      (Some(List(1, 2, 3)), traverse(List("1", "2", "3"))(x => try{Some(x.toInt)} catch{ case e:Exception => None})),
+      (None, traverse(List("1", "bad", "3"))(x => try{Some(x.toInt)} catch{ case e:Exception => None}))
     ))
   }
 
