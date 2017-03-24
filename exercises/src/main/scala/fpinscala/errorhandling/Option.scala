@@ -70,7 +70,11 @@ object Option {
     a.flatMap(aa => b.map(bb => f(aa, bb)))
   }
 
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = ???
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+    a.foldLeft(Some(Nil): Option[List[A]]){
+      case (z, aa) => map2(aa, z)(_ :: _)
+    }.map(_.reverse)
+  }
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = ???
 
@@ -112,6 +116,11 @@ object Option {
       (Some(3), map2(Some(1), Some(2))(_ + _)),
       (None, map2(None: Option[Int], Some(2))(_ + _)),
       (None, map2(Some(1), None: Option[Int])(_ + _))
+    ))
+
+    test("sequence", Seq(
+      (Some(List(1, 2, 3)), sequence(List(Some(1), Some(2), Some(3)))),
+      (None, sequence(List(Some(1), None, Some(3))))
     ))
   }
 
