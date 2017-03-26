@@ -32,7 +32,11 @@ sealed trait Stream[+A] {
     case Cons(h, t) => if (n > 0) t().drop(n - 1) else Cons(h, t)
   }
 
-  def takeWhile(p: A => Boolean): Stream[A] = ???
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Empty => Empty
+    case Cons(h, t) if p(h()) => Cons(h, () => t().takeWhile(p))
+    case Cons(_, _) => Empty
+  }
 
   def forAll(p: A => Boolean): Boolean = ???
 
@@ -89,6 +93,11 @@ object Stream {
       (Stream(3, 4, 5).toList, Stream(1, 2, 3, 4, 5).drop(2).toList),
       (Nil, Stream(1, 2, 3).drop(5).toList),
       (Stream(1, 2, 3).toList, Stream(1, 2, 3).drop(0).toList)
+    ))
+    test("takeWhile", Seq(
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 5).takeWhile(_ < 4).toList),
+      (Nil, Stream(1, 2, 3).takeWhile(_ < 1).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 1, 2, 3).takeWhile(_ < 4).toList)
     ))
   }
 }
