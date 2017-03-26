@@ -2,11 +2,6 @@ package fpinscala.laziness
 
 sealed trait Stream[+A] {
 
-  def toList: List[A] = this match {
-    case Empty => Nil: List[A]
-    case Cons(h, t) => h() :: t().toList
-  }
-
   def foldRight[B](z: => B)(f: (A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
     this match {
       case Cons(h, t) => f(h(), t().foldRight(z)(f)) // If `f` doesn't evaluate its second argument, the recursion never occurs.
@@ -22,9 +17,20 @@ sealed trait Stream[+A] {
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
 
-  def take(n: Int): Stream[A] = ???
+  def toList: List[A] = this match {
+    case Empty => Nil: List[A]
+    case Cons(h, t) => h() :: t().toList
+  }
 
-  def drop(n: Int): Stream[A] = ???
+  def take(n: Int): Stream[A] = this match {
+    case Empty => Empty
+    case Cons(h, t) => if (n > 0) Cons(h, () => t().take(n - 1)) else Empty
+  }
+
+  def drop(n: Int): Stream[A] = this match {
+    case Empty => Empty
+    case Cons(h, t) => if (n > 0) t().drop(n - 1) else Cons(h, t)
+  }
 
   def takeWhile(p: A => Boolean): Stream[A] = ???
 
@@ -73,6 +79,16 @@ object Stream {
   def main(args: Array[String]): Unit = {
     test("toList", Seq(
       (List(1, 2, 3), Stream(1, 2, 3).toList)
+    ))
+    test("take", Seq(
+      (Stream(1, 2).toList, Stream(1, 2, 3, 4, 5).take(2).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3).take(5).toList),
+      (Nil, Stream(1, 2, 3).take(0).toList)
+    ))
+    test("drop", Seq(
+      (Stream(3, 4, 5).toList, Stream(1, 2, 3, 4, 5).drop(2).toList),
+      (Nil, Stream(1, 2, 3).drop(5).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3).drop(0).toList)
     ))
   }
 }
