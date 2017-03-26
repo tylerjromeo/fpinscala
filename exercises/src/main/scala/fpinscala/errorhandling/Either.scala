@@ -1,46 +1,60 @@
 package fpinscala.errorhandling
 
 
-import scala.{Option => _, Either => _, Left => _, Right => _, _} // hide std library `Option` and `Either`, since we are writing our own in this chapter
+import scala.{Option => _, Either => _, Left => _, Right => _, _}
+// hide std library `Option` and `Either`, since we are writing our own in this chapter
 
-sealed trait Either[+E,+A] {
- def map[B](f: A => B): Either[E, B] = flatMap(e => Right(f(e)))
+sealed trait Either[+E, +A] {
+  def map[B](f: A => B): Either[E, B] = flatMap(e => Right(f(e)))
 
- def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match {
-   case Left(l) => Left(l)
-   case Right(r) => f(r)
- }
+  def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match {
+    case Left(l) => Left(l)
+    case Right(r) => f(r)
+  }
 
- def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = this match {
-   case Left(_) => b
-   case Right(r) => Right(r)
- }
+  def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = this match {
+    case Left(_) => b
+    case Right(r) => Right(r)
+  }
 
- def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
-   flatMap(a => b.map(f(a, _)))
- }
+  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
+    flatMap(a => b.map(f(a, _)))
+  }
 }
-case class Left[+E](get: E) extends Either[E,Nothing]
-case class Right[+A](get: A) extends Either[Nothing,A]
+
+case class Left[+E](get: E) extends Either[E, Nothing]
+
+case class Right[+A](get: A) extends Either[Nothing, A]
 
 object Either {
-  def traverse[E,A,B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] = ???
+  def traverse[E, A, B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] = {
+    es.foldLeft(Right(Nil): Either[E, List[B]]) {
+      case (Left(l), _) => Left(l)
+      case (Right(r), a) => f(a).map(_ :: r)
+    }.map(_.reverse)
+  }
 
-  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = ???
+  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = {
+    traverse(es)(e => e)
+  }
 
-  def mean(xs: IndexedSeq[Double]): Either[String, Double] = 
-    if (xs.isEmpty) 
+  def mean(xs: IndexedSeq[Double]): Either[String, Double] =
+    if (xs.isEmpty)
       Left("mean of empty list!")
-    else 
+    else
       Right(xs.sum / xs.length)
 
-  def safeDiv(x: Int, y: Int): Either[Exception, Int] = 
+  def safeDiv(x: Int, y: Int): Either[Exception, Int] =
     try Right(x / y)
-    catch { case e: Exception => Left(e) }
+    catch {
+      case e: Exception => Left(e)
+    }
 
   def Try[A](a: => A): Either[Exception, A] =
     try Right(a)
-    catch { case e: Exception => Left(e) }
+    catch {
+      case e: Exception => Left(e)
+    }
 
   def main(args: Array[String]): Unit = {
     test("map", Seq(
@@ -62,6 +76,14 @@ object Either {
       (Left("first"), Left("first").asInstanceOf[Either[String, Int]].map2(Right(4))(_ + _)),
       (Left("second"), Right(1).map2(Left("second").asInstanceOf[Either[String, Int]])(_ + _)),
       (Left("first"), Left("first").asInstanceOf[Either[String, Int]].map2(Left("second").asInstanceOf[Either[String, Int]])(_ + _))
+    ))
+    test("sequence", Seq(
+      (Right(List(1, 2, 3)), sequence(List(Right(1), Right(2), Right(3)))),
+      (Left("bad"), sequence(List(Right(1), Left("bad"), Left("bad2"))))
+    ))
+    test("traverse", Seq(
+      (Right(List(2, 3, 4)), traverse(List(1, 2, 3))(x => Right(x + 1))),
+      (Left("even is bad"), traverse(List(1, 2, 3))(x => if (x % 2 == 0) Left("even is bad") else Right(x)))
     ))
   }
 
