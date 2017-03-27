@@ -38,7 +38,11 @@ sealed trait Stream[+A] {
     case Cons(_, _) => Empty
   }
 
-  def forAll(p: A => Boolean): Boolean = ???
+  def forAll(p: A => Boolean): Boolean = {
+    foldRight(true){
+      case(a, z) => z && p(a)
+    }
+  }
 
   def headOption: Option[A] = ???
 
@@ -98,6 +102,12 @@ object Stream {
       (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 5).takeWhile(_ < 4).toList),
       (Nil, Stream(1, 2, 3).takeWhile(_ < 1).toList),
       (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 1, 2, 3).takeWhile(_ < 4).toList)
+    ))
+    test("forAll", Seq(
+      (true, Stream(3,4,5).forAll(_ > 2)),
+      (false, Stream(3,4,5).forAll(_ < 4)),
+      (true, empty.asInstanceOf[Stream[Int]].forAll(_ < 4)),
+      (false, scala.collection.immutable.Stream(() => 3, () => 4, () => {assert(false); 5}).forall(f => f() < 3))
     ))
   }
 }
