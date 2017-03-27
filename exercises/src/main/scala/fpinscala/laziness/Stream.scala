@@ -44,6 +44,13 @@ sealed trait Stream[+A] {
     }
   }
 
+  def takeWhile2(p: A => Boolean): Stream[A] = {
+    foldRight(Empty: Stream[A]){
+      case (a, z) if p(a) => Stream.cons(a, z)
+      case (_, _) => Empty
+    }
+  }
+
   def headOption: Option[A] = ???
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
@@ -108,6 +115,11 @@ object Stream {
       (false, Stream(3,4,5).forAll(_ < 4)),
       (true, empty.asInstanceOf[Stream[Int]].forAll(_ < 4)),
       (false, scala.collection.immutable.Stream(() => 3, () => 4, () => {assert(false); 5}).forall(f => f() < 3))
+    ))
+    test("takeWhile2", Seq(
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 5).takeWhile2(_ < 4).toList),
+      (Nil, Stream(1, 2, 3).takeWhile2(_ < 1).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 1, 2, 3).takeWhile2(_ < 4).toList)
     ))
   }
 }
