@@ -51,7 +51,11 @@ sealed trait Stream[+A] {
     }
   }
 
-  def headOption: Option[A] = ???
+  def headOption: Option[A] = {
+    foldRight(None: Option[A]) {
+      case (a, _) => Some(a)
+    }
+  }
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
@@ -120,6 +124,11 @@ object Stream {
       (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 5).takeWhile2(_ < 4).toList),
       (Nil, Stream(1, 2, 3).takeWhile2(_ < 1).toList),
       (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 1, 2, 3).takeWhile2(_ < 4).toList)
+    ))
+    test("headOption", Seq(
+      (Some(1), Stream(1, 2, 3).headOption),
+      (None, Stream.empty.headOption),
+      (Some(1), Stream(() => 1, () => { assert(false); 2 }).headOption.map(_.apply()))
     ))
   }
 }
