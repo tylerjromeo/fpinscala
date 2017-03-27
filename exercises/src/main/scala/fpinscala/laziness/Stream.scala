@@ -39,13 +39,13 @@ sealed trait Stream[+A] {
   }
 
   def forAll(p: A => Boolean): Boolean = {
-    foldRight(true){
-      case(a, z) => z && p(a)
+    foldRight(true) {
+      case (a, z) => z && p(a)
     }
   }
 
   def takeWhile2(p: A => Boolean): Stream[A] = {
-    foldRight(Empty: Stream[A]){
+    foldRight(Empty: Stream[A]) {
       case (a, z) if p(a) => Stream.cons(a, z)
       case (_, _) => Empty
     }
@@ -61,7 +61,7 @@ sealed trait Stream[+A] {
   // writing your own function signatures.
 
   def map[B](f: A => B): Stream[B] = {
-    foldRight(Stream.empty[B]){
+    foldRight(Stream.empty[B]) {
       case (a, z) => Stream.cons(f(a), z)
     }
   }
@@ -121,10 +121,12 @@ object Stream {
       (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 1, 2, 3).takeWhile(_ < 4).toList)
     ))
     test("forAll", Seq(
-      (true, Stream(3,4,5).forAll(_ > 2)),
-      (false, Stream(3,4,5).forAll(_ < 4)),
+      (true, Stream(3, 4, 5).forAll(_ > 2)),
+      (false, Stream(3, 4, 5).forAll(_ < 4)),
       (true, empty.asInstanceOf[Stream[Int]].forAll(_ < 4)),
-      (false, scala.collection.immutable.Stream(() => 3, () => 4, () => {assert(false); 5}).forall(f => f() < 3))
+      (false, scala.collection.immutable.Stream(() => 3, () => 4, () => {
+        assert(false); 5
+      }).forall(f => f() < 3))
     ))
     test("takeWhile2", Seq(
       (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 5).takeWhile2(_ < 4).toList),
@@ -134,12 +136,14 @@ object Stream {
     test("headOption", Seq(
       (Some(1), Stream(1, 2, 3).headOption),
       (None, Stream.empty.headOption),
-      (Some(1), Stream(() => 1, () => { assert(false); 2 }).headOption.map(_.apply()))
+      (Some(1), Stream(() => 1, () => {
+        assert(false); 2
+      }).headOption.map(_.apply()))
     ))
     test("map", Seq(
-      (Stream(2,3,4).toList, Stream(1,2,3).map(_ + 1).toList),
+      (Stream(2, 3, 4).toList, Stream(1, 2, 3).map(_ + 1).toList),
       (Stream.empty.toList, Stream.empty[Int].map(_ + 1).toList),
-      (Stream(1,2).toList, Stream(1,2,3).map(x => if(x == 3) assert(false) else x).take(2).toList)
+      (Stream(1, 2).toList, Stream(1, 2, 3).map(x => if (x == 3) assert(false) else x).take(2).toList)
     ))
   }
 }
