@@ -60,6 +60,12 @@ sealed trait Stream[+A] {
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
 
+  def map[B](f: A => B): Stream[B] = {
+    foldRight(Stream.empty[B]){
+      case (a, z) => Stream.cons(f(a), z)
+    }
+  }
+
   def startsWith[B](s: Stream[B]): Boolean = ???
 }
 
@@ -129,6 +135,11 @@ object Stream {
       (Some(1), Stream(1, 2, 3).headOption),
       (None, Stream.empty.headOption),
       (Some(1), Stream(() => 1, () => { assert(false); 2 }).headOption.map(_.apply()))
+    ))
+    test("map", Seq(
+      (Stream(2,3,4).toList, Stream(1,2,3).map(_ + 1).toList),
+      (Stream.empty.toList, Stream.empty[Int].map(_ + 1).toList),
+      (Stream(1,2).toList, Stream(1,2,3).map(x => if(x == 3) assert(false) else x).take(2).toList)
     ))
   }
 }
