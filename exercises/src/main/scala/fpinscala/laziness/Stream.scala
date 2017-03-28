@@ -79,6 +79,12 @@ sealed trait Stream[+A] {
     }
   }
 
+  def flatMap[B](f: A => Stream[B]): Stream[B] = {
+    foldRight(Stream.empty[B]) {
+      case (a, z) => f(a).append(z)
+    }
+  }
+
   def startsWith[B](s: Stream[B]): Boolean = ???
 }
 
@@ -170,6 +176,10 @@ object Stream {
       (Stream(1, 2, 3, 4).toList, Stream(1, 2).append(Stream(3, 4)).toList),
       (Stream(1, 2).toList, Stream(1, 2).append(empty).toList),
       (Stream(1, 2).toList, empty.append(Stream(1, 2)).toList)
+    ))
+    test("flatmap", Seq(
+      (Stream(1, 1, 2, 2, 3, 3).toList, Stream(1, 2, 3).flatMap(x => Stream(x, x)).toList),
+      (empty.toList, empty[Int].flatMap(x => Stream(x, x)).toList)
     ))
   }
 }
