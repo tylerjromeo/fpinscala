@@ -73,6 +73,12 @@ sealed trait Stream[+A] {
     }
   }
 
+  def append[B >: A](t: => Stream[B]): Stream[B] = {
+    foldRight(t) {
+      case (a, z) => Stream.cons(a, z)
+    }
+  }
+
   def startsWith[B](s: Stream[B]): Boolean = ???
 }
 
@@ -132,7 +138,8 @@ object Stream {
       (false, Stream(3, 4, 5).forAll(_ < 4)),
       (true, empty.asInstanceOf[Stream[Int]].forAll(_ < 4)),
       (false, scala.collection.immutable.Stream(() => 3, () => 4, () => {
-        assert(false); 5
+        assert(false);
+        5
       }).forall(f => f() < 3))
     ))
     test("takeWhile2", Seq(
@@ -144,7 +151,8 @@ object Stream {
       (Some(1), Stream(1, 2, 3).headOption),
       (None, Stream.empty.headOption),
       (Some(1), Stream(() => 1, () => {
-        assert(false); 2
+        assert(false);
+        2
       }).headOption.map(_.apply()))
     ))
     test("map", Seq(
@@ -153,10 +161,15 @@ object Stream {
       (Stream(1, 2).toList, Stream(1, 2, 3).map(x => if (x == 3) assert(false) else x).take(2).toList)
     ))
     test("filter", Seq(
-      (Stream(2).toList, Stream(1,2,3).filter(_ == 2).toList),
-      (Stream(1,2,3).toList, Stream(1,2,3).filter((_) => true).toList),
-      (empty.toList, Stream(1,2,3).filter((_) => false).toList),
+      (Stream(2).toList, Stream(1, 2, 3).filter(_ == 2).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3).filter((_) => true).toList),
+      (empty.toList, Stream(1, 2, 3).filter((_) => false).toList),
       (empty.toList, empty[Int].filter(_ == 2).toList)
+    ))
+    test("append", Seq(
+      (Stream(1, 2, 3, 4).toList, Stream(1, 2).append(Stream(3, 4)).toList),
+      (Stream(1, 2).toList, Stream(1, 2).append(empty).toList),
+      (Stream(1, 2).toList, empty.append(Stream(1, 2)).toList)
     ))
   }
 }
