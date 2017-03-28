@@ -66,6 +66,13 @@ sealed trait Stream[+A] {
     }
   }
 
+  def filter(f: A => Boolean): Stream[A] = {
+    foldRight(Stream.empty[A]) {
+      case (a, z) if f(a) => Stream.cons(a, z)
+      case (_, z) => z
+    }
+  }
+
   def startsWith[B](s: Stream[B]): Boolean = ???
 }
 
@@ -144,6 +151,12 @@ object Stream {
       (Stream(2, 3, 4).toList, Stream(1, 2, 3).map(_ + 1).toList),
       (Stream.empty.toList, Stream.empty[Int].map(_ + 1).toList),
       (Stream(1, 2).toList, Stream(1, 2, 3).map(x => if (x == 3) assert(false) else x).take(2).toList)
+    ))
+    test("filter", Seq(
+      (Stream(2).toList, Stream(1,2,3).filter(_ == 2).toList),
+      (Stream(1,2,3).toList, Stream(1,2,3).filter((_) => true).toList),
+      (empty.toList, Stream(1,2,3).filter((_) => false).toList),
+      (empty.toList, empty[Int].filter(_ == 2).toList)
     ))
   }
 }
