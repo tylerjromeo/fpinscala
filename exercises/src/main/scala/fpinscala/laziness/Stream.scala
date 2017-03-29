@@ -120,6 +120,13 @@ sealed trait Stream[+A] {
       } yield a == b
     }.getOrElse(false))
   }
+
+  def tails(): Stream[Stream[A]] = {
+    Stream.unfold(this){
+      case Cons(h, t) => Some(Cons(h, t), t())
+      case Empty => None
+    } append Stream(Stream.empty)
+  }
 }
 
 case object Empty extends Stream[Nothing]
@@ -310,6 +317,10 @@ object Stream {
       (true, Stream(1, 2, 3).startsWith(Stream(1, 2, 3))),
       (false, Stream(1, 2).startsWith(Stream(1, 2, 3))),
       (false, Stream(1, 2, 3).startsWith(Stream(1, 2, 2)))
+    ))
+    test("tails", Seq(
+      (Stream(empty).map(_.toList).toList, empty.tails().map(_.toList).toList),
+      (Stream(Stream(1, 2, 3), Stream(2, 3), Stream(3), empty).map(_.toList).toList, Stream(1, 2, 3).tails().map(_.toList).toList)
     ))
   }
 }
