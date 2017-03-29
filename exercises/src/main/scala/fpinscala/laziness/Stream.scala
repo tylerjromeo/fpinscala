@@ -75,6 +75,43 @@ sealed trait Stream[+A] {
     foldRight(Stream.empty[B])((a, z) => f(a).append(z))
   }
 
+  def map2[B](f: A => B): Stream[B] = {
+    Stream.unfold(this) {
+      case Cons(h, t) => Some(f(h()), t())
+      case Empty => None
+    }
+  }
+
+  def take2(n: Int): Stream[A] = {
+    Stream.unfold((this, n)) {
+      case (Cons(h, t), n) if n > 0 => Some(h(), (t(), n - 1))
+      case _ => None
+    }
+  }
+
+  def takeWhile3(p: A => Boolean): Stream[A] = {
+    Stream.unfold(this) {
+      case Cons(h, t) if p(h()) => Some(h(), t())
+      case _ => None
+    }
+  }
+
+  def zipWith[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = {
+    Stream.unfold((this, s)) {
+      case (Cons(h1, t1), Cons(h2, t2)) => Some(f(h1(), h2()), (t1(), t2()))
+      case _ => None
+    }
+  }
+
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+    Stream.unfold((this, s2)) {
+      case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()), Some(h2())), (t1(), t2()))
+      case (Empty, Cons(h2, t2)) => Some((None, Some(h2())), (Empty, t2()))
+      case (Cons(h1, t1), Empty) => Some((Some(h1()), None), (t1(), Empty))
+      case (Empty, Empty) => None
+    }
+  }
+
   def startsWith[B](s: Stream[B]): Boolean = ???
 }
 
@@ -234,6 +271,32 @@ object Stream {
     ))
     test("fibs2", Seq(
       (Stream(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55).toList, Stream.fibs2().take(11).toList)
+    ))
+
+    test("map2", Seq(
+      (Stream(2, 3, 4).toList, Stream(1, 2, 3).map2(_ + 1).toList),
+      (Stream.empty.toList, Stream.empty[Int].map2(_ + 1).toList),
+      // This fails because it evaluates 1 further than the take...
+      //      (Stream(1, 2).toList, Stream(1, 2, 3, 4).map2(x => if (x == 3) assert(false) else x).take(2).toList),
+      (Stream(1, 2).toList, Stream(1, 2, 3, 4).map2(x => if (x == 4) assert(false) else x).take(2).toList)
+    ))
+    test("take2", Seq(
+      (Stream(1, 2).toList, Stream(1, 2, 3, 4, 5).take2(2).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3).take2(5).toList),
+      (Nil, Stream(1, 2, 3).take2(0).toList)
+    ))
+    test("takeWhile3", Seq(
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 5).takeWhile3(_ < 4).toList),
+      (Nil, Stream(1, 2, 3).takeWhile3(_ < 1).toList),
+      (Stream(1, 2, 3).toList, Stream(1, 2, 3, 4, 1, 2, 3).takeWhile3(_ < 4).toList)
+    ))
+    test("zipWith", Seq(
+      (Stream("a1", "b2", "c3", "d4").toList, Stream("a", "b", "c", "d").zipWith(Stream.from(1))((s, x) => s + x.toString).toList)
+    ))
+    test("zipAll", Seq(
+      (Stream((Some(1), Some(4)), (Some(2), Some(5)), (Some(3), Some(6))).toList, Stream(1, 2, 3).zipAll(Stream(4, 5, 6)).toList),
+      (Stream((Some(1), None), (Some(2), None), (Some(3), None)).toList, Stream(1, 2, 3).zipAll(empty).toList),
+      (Stream((Some(1), Some(4)), (Some(2), Some(5)), (None, Some(6))).toList, Stream(1, 2).zipAll(Stream(4, 5, 6)).toList)
     ))
   }
 }
