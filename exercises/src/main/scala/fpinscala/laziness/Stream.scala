@@ -105,6 +105,11 @@ object Stream {
     Stream.cons(n, from(n + 1))
   }
 
+  def fibs(): Stream[Int] = {
+    def next(prev2: Int, prev1: Int): Stream[Int] = Stream.cons(prev1, next(prev1, prev2 + prev1))
+    cons(0, next(0, 1))
+  }
+
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
 
   def test[A, B](name: String, ioTable: Seq[(A, B)]): Unit = {
@@ -188,6 +193,9 @@ object Stream {
       (true, from(1).exists(_ == 6)),
       (Stream(-2, 0, 2, 4, 6, 8).toList, from(-1).map(_ * 2).take(6).toList),
       (false, from(1).forAll(_ < 30))
+    ))
+    test("fibs", Seq(
+      (Stream(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55).toList, Stream.fibs().take(11).toList)
     ))
   }
 }
