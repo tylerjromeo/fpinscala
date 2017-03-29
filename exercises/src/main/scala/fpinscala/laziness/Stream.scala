@@ -39,9 +39,7 @@ sealed trait Stream[+A] {
   }
 
   def forAll(p: A => Boolean): Boolean = {
-    foldRight(true) {
-      case (a, z) => z && p(a)
-    }
+    foldRight(true)((a, z) => p(a) && z)
   }
 
   def takeWhile2(p: A => Boolean): Stream[A] = {
@@ -52,18 +50,14 @@ sealed trait Stream[+A] {
   }
 
   def headOption: Option[A] = {
-    foldRight(None: Option[A]) {
-      case (a, _) => Some(a)
-    }
+    foldRight(None: Option[A])((a, _) => Some(a))
   }
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
 
   def map[B](f: A => B): Stream[B] = {
-    foldRight(Stream.empty[B]) {
-      case (a, z) => Stream.cons(f(a), z)
-    }
+    foldRight(Stream.empty[B])((a, z) => Stream.cons(f(a), z))
   }
 
   def filter(f: A => Boolean): Stream[A] = {
@@ -74,15 +68,11 @@ sealed trait Stream[+A] {
   }
 
   def append[B >: A](t: => Stream[B]): Stream[B] = {
-    foldRight(t) {
-      case (a, z) => Stream.cons(a, z)
-    }
+    foldRight(t)((a, z) => Stream.cons(a, z))
   }
 
   def flatMap[B](f: A => Stream[B]): Stream[B] = {
-    foldRight(Stream.empty[B]) {
-      case (a, z) => f(a).append(z)
-    }
+    foldRight(Stream.empty[B])((a, z) => f(a).append(z))
   }
 
   def startsWith[B](s: Stream[B]): Boolean = ???
@@ -106,6 +96,10 @@ object Stream {
     else cons(as.head, apply(as.tail: _*))
 
   val ones: Stream[Int] = Stream.cons(1, ones)
+
+  def constant[A](a: A): Stream[A] = {
+    Stream.cons(a, constant(a))
+  }
 
   def from(n: Int): Stream[Int] = ???
 
@@ -180,6 +174,12 @@ object Stream {
     test("flatmap", Seq(
       (Stream(1, 1, 2, 2, 3, 3).toList, Stream(1, 2, 3).flatMap(x => Stream(x, x)).toList),
       (empty.toList, empty[Int].flatMap(x => Stream(x, x)).toList)
+    ))
+    test("constant", Seq(
+      (Some("a"), constant("a").headOption),
+      (true, constant("a").map(s => s + s).exists(_ == "aa")),
+      (false, constant(7).forAll(_ != 7)),
+      (Stream(1, 1, 1, 1).toList, constant(1).take(4).toList)
     ))
   }
 }
