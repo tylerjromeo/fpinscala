@@ -101,7 +101,9 @@ object Stream {
     Stream.cons(a, constant(a))
   }
 
-  def from(n: Int): Stream[Int] = ???
+  def from(n: Int): Stream[Int] = {
+    Stream.cons(n, from(n + 1))
+  }
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
 
@@ -180,6 +182,12 @@ object Stream {
       (true, constant("a").map(s => s + s).exists(_ == "aa")),
       (false, constant(7).forAll(_ != 7)),
       (Stream(1, 1, 1, 1).toList, constant(1).take(4).toList)
+    ))
+    test("from", Seq(
+      (Some(1), from(1).headOption),
+      (true, from(1).exists(_ == 6)),
+      (Stream(-2, 0, 2, 4, 6, 8).toList, from(-1).map(_ * 2).take(6).toList),
+      (false, from(1).forAll(_ < 30))
     ))
   }
 }
