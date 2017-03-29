@@ -127,6 +127,12 @@ sealed trait Stream[+A] {
       case Empty => None
     } append Stream(Stream.empty)
   }
+
+  def scanRight[B](z: B)(f: (A, B) => B): Stream[B] = {
+    foldRight(Stream(z)) {
+      case (a, Cons(b, t)) => Stream.cons(f(a, b()), Cons(b, t))
+    }
+  }
 }
 
 case object Empty extends Stream[Nothing]
@@ -321,6 +327,9 @@ object Stream {
     test("tails", Seq(
       (Stream(empty).map(_.toList).toList, empty.tails().map(_.toList).toList),
       (Stream(Stream(1, 2, 3), Stream(2, 3), Stream(3), empty).map(_.toList).toList, Stream(1, 2, 3).tails().map(_.toList).toList)
+    ))
+    test("scanRight", Seq(
+      (Stream(6, 5, 3, 0).toList, Stream(1, 2, 3).scanRight(0)(_ + _).toList)
     ))
   }
 }
