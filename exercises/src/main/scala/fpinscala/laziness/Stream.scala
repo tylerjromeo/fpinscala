@@ -110,6 +110,14 @@ object Stream {
     cons(0, next(0, 1))
   }
 
+  val ones2: Stream[Int] = unfold(1)(_ => Some(1, 1))
+
+  def constant2[A](a: A): Stream[A] = unfold(a)(x => Some(x, x))
+
+  def from2(n: Int): Stream[Int] = unfold(n)(x => Some(x, x + 1))
+
+  def fibs2(): Stream[Int] = unfold((0, 1): (Int, Int))((ns) => Some(ns._1, (ns._2, ns._1 + ns._2)))
+
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
     f(z) match {
       case Some((a, s)) => cons(a, unfold(s)(f))
@@ -205,6 +213,27 @@ object Stream {
     test("unfold", Seq(
       (Stream(1, 2, 3, 4).toList, unfold(0)(x => Some((x + 1, x + 1))).take(4).toList),
       (Stream("2", "4", "8", "16").toList, unfold(1)(x => Some(((x + x).toString, x + x))).take(4).toList)
+    ))
+    test("ones2", Seq(
+      (Some(1), ones2.headOption),
+      (true, ones2.map(x => x.toString + x.toString).exists(_ == "11")),
+      (false, ones2.forAll(_ != 1)),
+      (Stream(1, 1, 1, 1).toList, ones2.take(4).toList)
+    ))
+    test("constant2", Seq(
+      (Some("a"), constant2("a").headOption),
+      (true, constant2("a").map(s => s + s).exists(_ == "aa")),
+      (false, constant2(7).forAll(_ != 7)),
+      (Stream(1, 1, 1, 1).toList, constant2(1).take(4).toList)
+    ))
+    test("from2", Seq(
+      (Some(1), from2(1).headOption),
+      (true, from2(1).exists(_ == 6)),
+      (Stream(-2, 0, 2, 4, 6, 8).toList, from2(-1).map(_ * 2).take(6).toList),
+      (false, from2(1).forAll(_ < 5))
+    ))
+    test("fibs2", Seq(
+      (Stream(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55).toList, Stream.fibs2().take(11).toList)
     ))
   }
 }
