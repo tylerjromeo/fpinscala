@@ -112,7 +112,14 @@ sealed trait Stream[+A] {
     }
   }
 
-  def startsWith[B](s: Stream[B]): Boolean = ???
+  def startsWith[B](s: Stream[B]): Boolean = {
+    zipAll(s).takeWhile(_._2.isDefined).forAll((pair) => {
+      for {
+        a <- pair._1
+        b <- pair._2
+      } yield a == b
+    }.getOrElse(false))
+  }
 }
 
 case object Empty extends Stream[Nothing]
@@ -297,6 +304,12 @@ object Stream {
       (Stream((Some(1), Some(4)), (Some(2), Some(5)), (Some(3), Some(6))).toList, Stream(1, 2, 3).zipAll(Stream(4, 5, 6)).toList),
       (Stream((Some(1), None), (Some(2), None), (Some(3), None)).toList, Stream(1, 2, 3).zipAll(empty).toList),
       (Stream((Some(1), Some(4)), (Some(2), Some(5)), (None, Some(6))).toList, Stream(1, 2).zipAll(Stream(4, 5, 6)).toList)
+    ))
+    test("startsWith", Seq(
+      (true, Stream(1, 2, 3).startsWith(Stream(1, 2))),
+      (true, Stream(1, 2, 3).startsWith(Stream(1, 2, 3))),
+      (false, Stream(1, 2).startsWith(Stream(1, 2, 3))),
+      (false, Stream(1, 2, 3).startsWith(Stream(1, 2, 2)))
     ))
   }
 }
