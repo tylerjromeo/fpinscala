@@ -34,7 +34,7 @@ object RNG {
     }
 
   def doubleViaMap: Rand[Double] = {
-    map(int)((i) => math.abs(i.asInstanceOf[Double]/Int.MaxValue))
+    map(int)((i) => math.abs(i.asInstanceOf[Double] / Int.MaxValue))
   }
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
@@ -86,7 +86,16 @@ object RNG {
     }
   }
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    rng: RNG => {
+      fs.foldRight((Nil: List[A], rng)) {
+        case (ra, (acc, r)) => {
+          val (a, rng2) = ra(rng)
+          (a :: acc, rng2)
+        }
+      }
+    }
+  }
 
   def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
 
