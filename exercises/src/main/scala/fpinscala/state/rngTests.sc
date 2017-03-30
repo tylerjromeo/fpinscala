@@ -14,4 +14,8 @@ doubleViaMap(rng)
 map2(doubleViaMap, int)((_, _))(rng)
 sequence(List(int, int, int, doubleViaMap))(rng)
 nonNegativeLessThan(4)(rng)
+mapViaFlatMap(nonNegativeInt)(i => -i)(rng)
+map2ViaFlatMap(doubleViaMap, int)((_, _))(rng)
+
+
 
