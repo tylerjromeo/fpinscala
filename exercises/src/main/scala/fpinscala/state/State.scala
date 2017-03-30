@@ -1,11 +1,14 @@
 package fpinscala.state
 
+import scala.annotation.tailrec
+
 
 trait RNG {
   def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
 }
 
 object RNG {
+
   // NB - this was called SimpleRNG in the book text
 
   case class Simple(seed: Long) extends RNG {
@@ -24,7 +27,7 @@ object RNG {
   def unit[A](a: A): Rand[A] =
     rng => (a, rng)
 
-  def map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
     rng => {
       val (a, rng2) = s(rng)
       (f(a), rng2)
@@ -32,24 +35,50 @@ object RNG {
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (i, nextRng) = rng.nextInt
-    if(i == Int.MinValue) nonNegativeInt(nextRng) else (math.abs(i), nextRng)
+    if (i == Int.MinValue) nonNegativeInt(nextRng) else (math.abs(i), nextRng)
   }
 
-  def double(rng: RNG): (Double, RNG) = ???
+  def double(rng: RNG): (Double, RNG) = {
+    val (i, nextRng) = nonNegativeInt(rng)
+    if (i == Int.MaxValue) double(nextRng) else (i.asInstanceOf[Double] / Int.MaxValue, nextRng)
+  }
 
-  def intDouble(rng: RNG): ((Int,Double), RNG) = ???
+  def intDouble(rng: RNG): ((Int, Double), RNG) = {
+    val (i, rng2) = rng.nextInt
+    val (d, rng3) = double(rng2)
+    ((i, d), rng3)
+  }
 
-  def doubleInt(rng: RNG): ((Double,Int), RNG) = ???
+  def doubleInt(rng: RNG): ((Double, Int), RNG) = {
+    val ((i, d), rng2) = intDouble(rng)
+    ((d, i), rng2)
+  }
 
-  def double3(rng: RNG): ((Double,Double,Double), RNG) = ???
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+    val (d1, rng2) = double(rng)
+    val (d2, rng3) = double(rng2)
+    val (d3, rng4) = double(rng3)
+    ((d1, d2, d3), rng4)
+  }
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    @tailrec
+    def iter(c: Int, r: RNG, acc: List[Int]): (List[Int], RNG) = {
+      if (c > 0) {
+        val (i, rng2) = r.nextInt
+        iter(c - 1, rng2, i :: acc)
+      } else {
+        (acc, r)
+      }
+    }
+    iter(count, rng, Nil)
+  }
 
-  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
 
-  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
 
   def main(args: Array[String]): Unit = {
     import Test._
@@ -59,26 +88,32 @@ object RNG {
       (nonNegativeInt(rng1)._1, nonNegativeInt(rng1)._1),
       (-rngThatReturnsNegative.nextInt._1, nonNegativeInt(rngThatReturnsNegative)._1)
     ))
+    // I think I'm actually gonna skip tests for this one and rely instead on testing the repl
   }
 }
 
-case class State[S,+A](run: S => (A, S)) {
+case class State[S, +A](run: S => (A, S)) {
   def map[B](f: A => B): State[S, B] =
     ???
-  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+
+  def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
     ???
+
   def flatMap[B](f: A => State[S, B]): State[S, B] =
     ???
 }
 
 sealed trait Input
+
 case object Coin extends Input
+
 case object Turn extends Input
 
 case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object State {
   type Rand[A] = State[RNG, A]
+
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
 }
 
