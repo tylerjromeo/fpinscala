@@ -33,6 +33,10 @@ object RNG {
       (f(a), rng2)
     }
 
+  def doubleViaMap: Rand[Double] = {
+    map(int)((i) => math.abs(i.asInstanceOf[Double]/Int.MaxValue))
+  }
+
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (i, nextRng) = rng.nextInt
     if (i == Int.MinValue) nonNegativeInt(nextRng) else (math.abs(i), nextRng)
