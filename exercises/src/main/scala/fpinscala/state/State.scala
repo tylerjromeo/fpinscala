@@ -30,7 +30,10 @@ object RNG {
       (f(a), rng2)
     }
 
-  def nonNegativeInt(rng: RNG): (Int, RNG) = ???
+  def nonNegativeInt(rng: RNG): (Int, RNG) = {
+    val (i, nextRng) = rng.nextInt
+    if(i == Int.MinValue) nonNegativeInt(nextRng) else (math.abs(i), nextRng)
+  }
 
   def double(rng: RNG): (Double, RNG) = ???
 
@@ -47,6 +50,16 @@ object RNG {
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
 
   def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+
+  def main(args: Array[String]): Unit = {
+    import Test._
+    val rng1 = RNG.Simple(123)
+    val rngThatReturnsNegative = RNG.Simple(1258888)
+    test("nonNegativeInt", Seq(
+      (nonNegativeInt(rng1)._1, nonNegativeInt(rng1)._1),
+      (-rngThatReturnsNegative.nextInt._1, nonNegativeInt(rngThatReturnsNegative)._1)
+    ))
+  }
 }
 
 case class State[S,+A](run: S => (A, S)) {
@@ -67,4 +80,15 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 object State {
   type Rand[A] = State[RNG, A]
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+}
+
+object Test {
+  def test[A, B](name: String, ioTable: Seq[(A, B)]): Unit = {
+    println(s"$name test:")
+    ioTable.foreach {
+      case (expected, result) if expected != result => println(s"expected $expected but was $result")
+      case _ => ()
+    }
+    println(s"$name test complete\n")
+  }
 }
