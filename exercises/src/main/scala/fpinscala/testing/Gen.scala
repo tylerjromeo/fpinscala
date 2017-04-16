@@ -50,6 +50,10 @@ object Gen {
   def choose(start: Int, stopExclusive: Int): Gen[Int] = Gen[Int](sample =
     State[RNG, Int](RNG.map[Int, Int](RNG.nonNegativeLessThan(stopExclusive - start))(_ + start))
   )
+
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = {
+    boolean.flatMap(if(_) g1 else g2)
+  }
 }
 
 //trait Gen[A] {
