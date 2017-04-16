@@ -23,7 +23,15 @@ object Prop {
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
 }
 
-case class Gen[A](sample: State[RNG, A])
+case class Gen[A](sample: State[RNG, A]) {
+  def flatMap[B](f: A => Gen[B]): Gen[B] = {
+    Gen[B](sample = sample.flatMap(f(_).sample))
+  }
+
+  def listOfN(size: Gen[Int]): Gen[List[A]] = {
+    size.flatMap(Gen.listOfN(_, Gen.this))
+  }
+}
 
 
 object Gen {
