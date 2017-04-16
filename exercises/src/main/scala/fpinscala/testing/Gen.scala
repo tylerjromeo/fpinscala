@@ -43,6 +43,11 @@ object Gen {
     State[RNG, Int](RNG.int).map(_ % 2 == 0)
   )
 
+  // generates a Double in the ranfe [0, 1)
+  def double: Gen[Double] = Gen[Double](
+    State[RNG, Double](RNG.doubleViaMap)
+  )
+
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen[List[A]](
     State.sequence(List.fill(n)(g.sample))
   )
@@ -53,6 +58,12 @@ object Gen {
 
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = {
     boolean.flatMap(if(_) g1 else g2)
+  }
+
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
+    val total = g1._2 + g2._2
+    val prob1 = g1._2 / total
+    double.flatMap(d => if(d < prob1) g1._1 else g2._1)
   }
 }
 
